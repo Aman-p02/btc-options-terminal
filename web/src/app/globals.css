@@ -3,24 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #0B0D0E;
-  --bg-surface: #131618;
-  --bg-subtle: #1C2023;
-  --border-color: #272C30;
-  --border-hover: #383E44;
-  --text-primary: #EDEDED;
-  --text-muted: #8E959E;
+  --bg-primary: #0D0F11;
+  --bg-surface: #14171A;
+  --bg-subtle: #1C2024;
+  --border-color: #262B30;
+  --border-hover: #3A414A;
+  --text-primary: #F0F2F5;
+  --text-muted: #9AA0A6;
   --accent-amber: #F59E0B;
 }
 
 .light {
-  --bg-primary: #F5F6F8;
+  --bg-primary: #F7F8FA;
   --bg-surface: #FFFFFF;
-  --bg-subtle: #ECEEF1;
-  --border-color: #D8DCE2;
-  --border-hover: #B8BEC8;
-  --text-primary: #111418;
-  --text-muted: #626B76;
+  --bg-subtle: #EDF0F3;
+  --border-color: #D3D8DF;
+  --border-hover: #B4BCC8;
+  --text-primary: #15181C;
+  --text-muted: #5F6670;
   --accent-amber: #D97706;
 }
 
@@ -34,7 +34,7 @@ body {
 
 /* Strict Tabular Numbers for all financial metrics */
 .num, .font-mono {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', 'Cascadia Code', monospace;
   font-variant-numeric: tabular-nums lining-nums;
   letter-spacing: -0.02em;
 }
@@ -60,7 +60,7 @@ body {
   border-left: 1px solid var(--border-color);
 }
 
-/* Dense Terminal Scrollbar */
+/* Clean Modern Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -70,8 +70,8 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
-

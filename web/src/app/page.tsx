@@ -23,8 +23,8 @@ import {
   Columns,
   Radio,
   Download,
-  Info,
-  TrendingDown
+  Sparkles,
+  ChevronRight
 } from 'lucide-react';
 
 export default function TerminalPage() {
@@ -87,8 +87,8 @@ export default function TerminalPage() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans ${isDark ? 'dark bg-terminal-bg text-terminal-text' : 'light bg-lightterm-bg text-lightterm-text'}`}>
-      {/* Terminal Top Navigation Header */}
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${isDark ? 'dark bg-terminal-bg text-terminal-text' : 'light bg-lightterm-bg text-lightterm-text'}`}>
+      {/* Modern Top Navigation Header with Hamburger */}
       <Header
         locale={locale}
         setLocale={setLocale}
@@ -98,36 +98,38 @@ export default function TerminalPage() {
         setTzOffset={setTzOffset}
         liveData={liveData}
         userPlan={userPlan}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onExportClick={() => setIsExportOpen(true)}
         onUpgradeClick={() => {
           setUpgradeReason('Upgrade to unlock full institutional features');
           setIsUpgradeOpen(true);
         }}
       />
 
-      {/* Real Data Finding Highlight Banner */}
-      <div className="bg-[var(--bg-subtle)] hairline-b px-4 py-2 text-xs font-mono flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="px-1.5 py-0.5 rounded bg-amber/20 text-amber font-bold text-[10px]">
-            EMPIRICAL FINDING (2017-2026)
-          </span>
-          <span className="text-[11px] text-[var(--text-primary)]">
-            Over 9.2 years (477 instances), <b>Sunday 10:00 AM IST</b> 6h hold with a 2.5% strike touched historically in only <b>6.5% of cases</b> (95% CI: [4.6% - 9.1%]). Wednesday 11:00 AM IST touched in <b>18.2%</b> of cases.
+      {/* Clean Insight Callout Bar */}
+      <div className="bg-[var(--bg-subtle)] border-b border-[var(--border-color)] px-4 py-2 text-xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber/15 border border-amber/30 text-amber font-mono font-bold text-[10px] shrink-0">
+            <Sparkles className="w-3 h-3 text-amber" />
+            <span>EMPIRICAL KEY TAKEAWAY</span>
+          </div>
+          <span className="text-[11px] text-[var(--text-muted)] truncate">
+            Sunday 10:00 AM IST (6h hold, 2.5% strike) historically touched in only <strong className="text-emerald-400">6.5%</strong> of cases (477 sample runs). Wednesday touched in <strong className="text-red-400">18.2%</strong>.
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsExportOpen(true)}
-            className="flex items-center gap-1 px-2.5 py-1 hairline-border bg-[var(--bg-surface)] hover:text-amber rounded text-[11px] font-semibold transition-colors"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{t.exportPDF}</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setActiveTab('heatmap')}
+          className="text-amber hover:underline text-[11px] font-mono flex items-center gap-1 shrink-0"
+        >
+          <span>View Heatmap</span>
+          <ChevronRight className="w-3 h-3" />
+        </button>
       </div>
 
-      {/* Main Terminal Tab Navigation */}
-      <div className="bg-[var(--bg-surface)] hairline-b px-4 flex items-center gap-1 overflow-x-auto text-xs font-mono select-none">
+      {/* Tab Navigation Ribbon (Desktop Clean Pills) */}
+      <div className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] px-4 py-2 hidden md:flex items-center gap-1.5 overflow-x-auto select-none">
         {[
           { id: 'heatmap', label: t.navHeatmap, icon: Grid },
           { id: 'strike_finder', label: t.navStrikeFinder, icon: Search },
@@ -143,10 +145,10 @@ export default function TerminalPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-3 py-2.5 hairline-r transition-colors border-b-2 ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all ${
                 isActive
-                  ? 'border-amber text-amber font-bold bg-[var(--bg-subtle)]'
-                  : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
+                  ? 'bg-amber text-black font-bold shadow-sm'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -157,66 +159,68 @@ export default function TerminalPage() {
       </div>
 
       {/* Dynamic Content Views */}
-      <main className="flex-1 p-3 sm:p-4 max-w-[1600px] w-full mx-auto">
-        {activeTab === 'heatmap' && (
-          <HeatmapView
-            locale={locale}
-            tzOffset={tzOffset}
-            spotPrice={liveData?.btc_price || 70000}
-            onSelectSlot={handleSelectSlotFromHeatmap}
-          />
-        )}
+      <main className="flex-1 p-3 sm:p-5 max-w-[1650px] w-full mx-auto">
+        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-3 sm:p-5 shadow-sm">
+          {activeTab === 'heatmap' && (
+            <HeatmapView
+              locale={locale}
+              tzOffset={tzOffset}
+              spotPrice={liveData?.btc_price || 70000}
+              onSelectSlot={handleSelectSlotFromHeatmap}
+            />
+          )}
 
-        {activeTab === 'strike_finder' && (
-          <StrikeFinderView
-            locale={locale}
-            tzOffset={tzOffset}
-            spotPrice={liveData?.btc_price || 70000}
-            onSelectSetup={handleSelectSetupFromFinder}
-          />
-        )}
+          {activeTab === 'strike_finder' && (
+            <StrikeFinderView
+              locale={locale}
+              tzOffset={tzOffset}
+              spotPrice={liveData?.btc_price || 70000}
+              onSelectSetup={handleSelectSetupFromFinder}
+            />
+          )}
 
-        {activeTab === 'distance' && (
-          <DistanceCalcView
-            locale={locale}
-            tzOffset={tzOffset}
-            spotPrice={liveData?.btc_price || 70000}
-            initialDow={selectedDow}
-            initialHour={selectedHour}
-          />
-        )}
+          {activeTab === 'distance' && (
+            <DistanceCalcView
+              locale={locale}
+              tzOffset={tzOffset}
+              spotPrice={liveData?.btc_price || 70000}
+              initialDow={selectedDow}
+              initialHour={selectedHour}
+            />
+          )}
 
-        {activeTab === 'sl_planner' && (
-          <SLPlannerView
-            locale={locale}
-            tzOffset={tzOffset}
-            spotPrice={liveData?.btc_price || 70000}
-          />
-        )}
+          {activeTab === 'sl_planner' && (
+            <SLPlannerView
+              locale={locale}
+              tzOffset={tzOffset}
+              spotPrice={liveData?.btc_price || 70000}
+            />
+          )}
 
-        {activeTab === 'backtester' && (
-          <BacktesterView
-            locale={locale}
-            tzOffset={tzOffset}
-            spotPrice={liveData?.btc_price || 70000}
-          />
-        )}
+          {activeTab === 'backtester' && (
+            <BacktesterView
+              locale={locale}
+              tzOffset={tzOffset}
+              spotPrice={liveData?.btc_price || 70000}
+            />
+          )}
 
-        {activeTab === 'compare' && (
-          <CompareView
-            locale={locale}
-            tzOffset={tzOffset}
-            spotPrice={liveData?.btc_price || 70000}
-          />
-        )}
+          {activeTab === 'compare' && (
+            <CompareView
+              locale={locale}
+              tzOffset={tzOffset}
+              spotPrice={liveData?.btc_price || 70000}
+            />
+          )}
 
-        {activeTab === 'live' && (
-          <LivePanel
-            locale={locale}
-            liveData={liveData}
-            regimeData={regimeData}
-          />
-        )}
+          {activeTab === 'live' && (
+            <LivePanel
+              locale={locale}
+              liveData={liveData}
+              regimeData={regimeData}
+            />
+          )}
+        </div>
       </main>
 
       {/* Universal Footer */}
@@ -249,4 +253,3 @@ export default function TerminalPage() {
     </div>
   );
 }
-
