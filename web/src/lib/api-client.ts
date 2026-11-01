@@ -4,8 +4,12 @@
  * Client components never call the Python API directly.
  */
 
-const ANALYTICS_API_URL = process.env.ANALYTICS_API_URL || "http://127.0.0.1:8000";
-const INTERNAL_SECRET = process.env.ANALYTICS_API_SECRET || "super-secret-internal-terminal-key-2026";
+const RAW_URL = process.env.ANALYTICS_API_URL || "http://127.0.0.1:8000";
+const ANALYTICS_API_URL = RAW_URL.replace(/[\r\n\t]/g, '').trim().replace(/\/$/, '');
+
+const RAW_SECRET = process.env.ANALYTICS_API_SECRET || "super-secret-internal-terminal-key-2026";
+// Clean spaces, newlines, quotes so HTTP header doesn't fail
+const INTERNAL_SECRET = RAW_SECRET.replace(/[\r\n\t"]/g, '').trim();
 
 export async function fetchFromAnalytics<T>(
   endpoint: string,
