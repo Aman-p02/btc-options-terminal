@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Locale, translations } from '@/lib/i18n';
 import { HeatmapResponse, HeatmapCell, SideType, HoldMin, HeatmapMetric, Resolution } from '@/lib/types';
-import { Shield, AlertTriangle, Info, Sliders, Layers } from 'lucide-react';
+import { Shield, AlertTriangle, Info, Sliders, ChevronDown } from 'lucide-react';
 
 interface HeatmapViewProps {
   locale: Locale;
@@ -43,13 +43,13 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
   const [resolution, setResolution] = useState<Resolution>('hour');
   const [filter7dVol, setFilter7dVol] = useState<boolean>(false);
   const [max7dVol, setMax7dVol] = useState<number>(60.0);
+  const [showFiltersMobile, setShowFiltersMobile] = useState<boolean>(false);
 
   // Data & loading states
   const [data, setData] = useState<HeatmapResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredCell, setHoveredCell] = useState<HeatmapCell | null>(null);
-  const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
   useEffect(() => {
     async function loadHeatmap() {
@@ -89,37 +89,50 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
     loadHeatmap();
   }, [holdMin, side, strikeDistPct, fromYear, toYear, metric, resolution, tzOffset, filter7dVol, max7dVol]);
 
-  // Color mapping based on metric and value
   const getCellBg = (val: number, isTouchProb: boolean) => {
     if (isTouchProb) {
-      if (val <= 2.5) return 'bg-emerald-950/70 text-emerald-300 border-emerald-900/50 hover:border-emerald-400';
-      if (val <= 5.0) return 'bg-emerald-900/40 text-emerald-400 border-emerald-900/30 hover:border-emerald-300';
-      if (val <= 8.0) return 'bg-amber-950/50 text-amber-300 border-amber-900/40 hover:border-amber-400';
-      if (val <= 12.0) return 'bg-amber-900/60 text-amber-200 border-amber-800/50 hover:border-amber-300';
-      return 'bg-red-950/70 text-red-300 border-red-900/50 hover:border-red-400';
+      if (val <= 3.0) return 'bg-emerald-950/80 text-emerald-300 border-emerald-900/60 hover:border-emerald-400';
+      if (val <= 6.0) return 'bg-emerald-900/40 text-emerald-400 border-emerald-900/40 hover:border-emerald-300';
+      if (val <= 9.0) return 'bg-amber-950/60 text-amber-300 border-amber-900/50 hover:border-amber-400';
+      if (val <= 14.0) return 'bg-amber-900/70 text-amber-200 border-amber-800/60 hover:border-amber-300';
+      return 'bg-red-950/80 text-red-300 border-red-900/60 hover:border-red-400';
     }
-    // Ranges: lower is calmer
-    if (val <= 1.5) return 'bg-emerald-950/70 text-emerald-300 border-emerald-900/50 hover:border-emerald-400';
-    if (val <= 3.0) return 'bg-amber-950/50 text-amber-300 border-amber-900/40 hover:border-amber-400';
-    return 'bg-red-950/70 text-red-300 border-red-900/50 hover:border-red-400';
+    if (val <= 1.5) return 'bg-emerald-950/80 text-emerald-300 border-emerald-900/60 hover:border-emerald-400';
+    if (val <= 3.0) return 'bg-amber-950/60 text-amber-300 border-amber-900/50 hover:border-amber-400';
+    return 'bg-red-950/80 text-red-300 border-red-900/60 hover:border-red-400';
   };
 
   const ptsValue = spotPrice ? (spotPrice * (strikeDistPct / 100)).toFixed(0) : '0';
 
   return (
     <div className="space-y-3">
-      {/* Control Bar: Bloomberg-Dense Toolbar */}
-      <div className="p-3 bg-[var(--bg-surface)] hairline-border rounded flex flex-wrap items-center justify-between gap-3 text-xs">
+      {/* Mobile Filters Toggle Button */}
+      <div className="sm:hidden flex items-center justify-between p-2.5 bg-[var(--bg-subtle)] rounded-lg border border-[var(--border-color)]">
+        <div className="flex items-center gap-2">
+          <Sliders className="w-4 h-4 text-amber" />
+          <span className="font-mono text-xs font-semibold text-[var(--text-primary)]">Trade Setup Filters</span>
+        </div>
+        <button
+          onClick={() => setShowFiltersMobile(!showFiltersMobile)}
+          className="flex items-center gap-1 text-[11px] font-mono text-amber hover:underline"
+        >
+          <span>{showFiltersMobile ? 'Hide Filters' : 'Adjust Filters'}</span>
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFiltersMobile ? 'rotate-180' : ''}`} />
+        </button>
+      </div>
+
+      {/* Control Bar: Responsive Filters Toolbar */}
+      <div className={`p-3 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-xl space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 text-xs ${showFiltersMobile ? 'block' : 'hidden sm:flex'}`}>
         <div className="flex flex-wrap items-center gap-3">
           {/* Hold Duration */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[var(--text-muted)] font-mono">{t.holdDuration}:</span>
-            <div className="inline-flex rounded hairline-border bg-[var(--bg-subtle)] p-0.5">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[var(--text-muted)] font-mono text-[11px]">{t.holdDuration}:</span>
+            <div className="inline-flex rounded-md border border-[var(--border-color)] bg-[var(--bg-surface)] p-0.5 overflow-x-auto max-w-full">
               {HOLDS.map((h) => (
                 <button
                   key={h.value}
                   onClick={() => setHoldMin(h.value)}
-                  className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
+                  className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors whitespace-nowrap ${
                     holdMin === h.value
                       ? 'bg-amber text-black font-semibold'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -132,16 +145,16 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
           </div>
 
           {/* Option Side */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[var(--text-muted)] font-mono">{t.side}:</span>
-            <div className="inline-flex rounded hairline-border bg-[var(--bg-subtle)] p-0.5 font-mono">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[var(--text-muted)] font-mono text-[11px]">{t.side}:</span>
+            <div className="inline-flex rounded-md border border-[var(--border-color)] bg-[var(--bg-surface)] p-0.5 font-mono">
               {(['call', 'put', 'both'] as SideType[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setSide(s)}
                   className={`px-2.5 py-0.5 text-[11px] uppercase rounded transition-colors ${
                     side === s
-                      ? 'bg-[var(--border-color)] text-[var(--text-primary)] font-semibold'
+                      ? 'bg-amber/20 border border-amber/40 text-amber font-semibold'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
                 >
@@ -152,9 +165,9 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
           </div>
 
           {/* Strike Distance */}
-          <div className="flex items-center gap-1.5 font-mono">
-            <span className="text-[var(--text-muted)]">{t.strikeDist}:</span>
-            <div className="flex items-center gap-1 bg-[var(--bg-subtle)] hairline-border px-2 py-0.5 rounded">
+          <div className="flex items-center gap-1.5 font-mono w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[var(--text-muted)] text-[11px]">{t.strikeDist}:</span>
+            <div className="flex items-center gap-1 bg-[var(--bg-surface)] border border-[var(--border-color)] px-2 py-1 rounded-md">
               <input
                 type="number"
                 step="0.25"
@@ -162,7 +175,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
                 max="25.0"
                 value={strikeDistPct}
                 onChange={(e) => setStrikeDistPct(Number(e.target.value))}
-                className="w-12 bg-transparent text-[var(--text-primary)] text-right focus:outline-none"
+                className="w-12 bg-transparent text-[var(--text-primary)] text-right font-bold focus:outline-none"
               />
               <span className="text-[var(--text-muted)]">%</span>
               {spotPrice > 0 && (
@@ -172,12 +185,12 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
           </div>
 
           {/* Metric Selector */}
-          <div className="flex items-center gap-1.5 font-mono">
-            <span className="text-[var(--text-muted)]">{t.metric}:</span>
+          <div className="flex items-center gap-1.5 font-mono w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[var(--text-muted)] text-[11px]">{t.metric}:</span>
             <select
               value={metric}
               onChange={(e) => setMetric(e.target.value as HeatmapMetric)}
-              className="bg-[var(--bg-subtle)] hairline-border text-[var(--text-primary)] px-2 py-1 rounded text-[11px] focus:outline-none"
+              className="bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-primary)] px-2 py-1 rounded-md text-[11px] focus:outline-none focus:border-amber cursor-pointer"
             >
               <option value="touch_prob">{t.touchProb}</option>
               <option value="median_range">{t.medianRange}</option>
@@ -185,35 +198,12 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
               <option value="worst_case">{t.worstCase}</option>
             </select>
           </div>
-
-          {/* Resolution Toggle */}
-          <div className="flex items-center gap-1 font-mono">
-            <span className="text-[var(--text-muted)]">{t.resolution}:</span>
-            <div className="inline-flex rounded hairline-border bg-[var(--bg-subtle)] p-0.5">
-              <button
-                onClick={() => setResolution('hour')}
-                className={`px-2 py-0.5 text-[10px] rounded ${
-                  resolution === 'hour' ? 'bg-zinc-700 text-white font-bold' : 'text-zinc-400'
-                }`}
-              >
-                1-Hour (168)
-              </button>
-              <button
-                onClick={() => setResolution('15min')}
-                className={`px-2 py-0.5 text-[10px] rounded ${
-                  resolution === '15min' ? 'bg-zinc-700 text-white font-bold' : 'text-zinc-400'
-                }`}
-              >
-                15-Min (672)
-              </button>
-            </div>
-          </div>
         </div>
 
-        {/* Right side: Year Range & Regime Filter */}
-        <div className="flex items-center gap-3 font-mono">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[var(--text-muted)]">{t.years}:</span>
+        {/* Right side: Year Range & Skip Vol */}
+        <div className="flex flex-wrap items-center gap-3 font-mono pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--border-color)]">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[var(--text-muted)] text-[11px]">{t.years}:</span>
             <select
               value={`${fromYear}-${toYear}`}
               onChange={(e) => {
@@ -221,7 +211,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
                 setFromYear(from);
                 setToYear(to);
               }}
-              className="bg-[var(--bg-subtle)] hairline-border text-[var(--text-primary)] px-2 py-1 rounded text-[11px] focus:outline-none"
+              className="bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-primary)] px-2 py-1 rounded-md text-[11px] focus:outline-none focus:border-amber cursor-pointer"
             >
               <option value="2024-2026">2024-2026 (Recent Regime)</option>
               <option value="2017-2026">2017-2026 (Full 9-Year History)</option>
@@ -235,7 +225,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
               type="checkbox"
               checked={filter7dVol}
               onChange={(e) => setFilter7dVol(e.target.checked)}
-              className="accent-amber"
+              className="accent-amber w-3.5 h-3.5"
             />
             <span>Skip High Vol (&gt;60%)</span>
           </label>
@@ -243,47 +233,54 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
       </div>
 
       {/* Main Heatmap Container */}
-      <div className="p-3 bg-[var(--bg-surface)] hairline-border rounded space-y-3">
-        {/* Statistical Summary Header Banner */}
+      <div className="p-3 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl space-y-3">
+        {/* Statistical Summary Cards */}
         {data && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-            <div className="p-2 bg-[var(--bg-subtle)] hairline-border rounded">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono">
+            <div className="p-2.5 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-lg">
               <span className="text-[var(--text-muted)] block text-[10px] uppercase">{t.safestWindow}</span>
-              <span className="font-bold text-emerald-400 text-sm">{data.safest_slot}</span>
+              <span className="font-bold text-emerald-400 text-sm sm:text-base">{data.safest_slot}</span>
             </div>
-            <div className="p-2 bg-[var(--bg-subtle)] hairline-border rounded">
+            <div className="p-2.5 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-lg">
               <span className="text-[var(--text-muted)] block text-[10px] uppercase">{t.riskiestWindow}</span>
-              <span className="font-bold text-red-400 text-sm">{data.riskiest_slot}</span>
+              <span className="font-bold text-red-400 text-sm sm:text-base">{data.riskiest_slot}</span>
             </div>
-            <div className="p-2 bg-[var(--bg-subtle)] hairline-border rounded">
+            <div className="p-2.5 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-lg">
               <span className="text-[var(--text-muted)] block text-[10px] uppercase">Mean Touch Rate</span>
-              <span className="font-bold text-[var(--text-primary)] text-sm">{data.overall_touch_pct}%</span>
+              <span className="font-bold text-[var(--text-primary)] text-sm sm:text-base">{data.overall_touch_pct}%</span>
             </div>
-            <div className="p-2 bg-[var(--bg-subtle)] hairline-border rounded">
-              <span className="text-[var(--text-muted)] block text-[10px] uppercase">Total Historical Windows (n)</span>
-              <span className="font-bold text-[var(--text-primary)] text-sm">{data.overall_n.toLocaleString()}</span>
+            <div className="p-2.5 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-lg">
+              <span className="text-[var(--text-muted)] block text-[10px] uppercase">Total Windows (n)</span>
+              <span className="font-bold text-zinc-300 text-sm sm:text-base">{data.overall_n.toLocaleString()}</span>
             </div>
           </div>
         )}
 
-        {/* Heatmap Grid */}
+        {/* Swipe hint on mobile */}
+        <div className="sm:hidden text-center text-[10px] font-mono text-[var(--text-muted)] flex items-center justify-center gap-1">
+          <span>👈 Swipe left/right across 24 hours 👉</span>
+        </div>
+
+        {/* Heatmap Grid with Smooth Mobile Horizontal Scrolling */}
         {loading ? (
           <div className="h-64 flex flex-col items-center justify-center text-[var(--text-muted)] font-mono text-xs gap-2">
-            <div className="w-5 h-5 border-2 border-amber border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-2 border-amber border-t-transparent rounded-full animate-spin"></div>
             <span>Evaluating 2.57M historical excursions...</span>
           </div>
         ) : error ? (
-          <div className="p-4 bg-red-950/20 hairline-border border-red-800 text-red-400 text-xs font-mono">
+          <div className="p-4 bg-red-950/20 border border-red-800 text-red-400 text-xs font-mono rounded-lg">
             {error}
           </div>
         ) : data ? (
-          <div className="overflow-x-auto">
-            <div className="min-w-[760px] select-none">
+          <div className="overflow-x-auto pb-2 scrollbar-thin">
+            <div className="min-w-[840px] select-none">
               {/* Hour Header (00 to 23) */}
               <div className="grid grid-cols-[60px_repeat(24,_minmax(0,_1fr))] gap-1 mb-1 font-mono text-[10px] text-[var(--text-muted)] text-center">
-                <div className="text-left pl-1">DAY</div>
+                <div className="text-left pl-2 font-bold">DAY</div>
                 {Array.from({ length: 24 }).map((_, h) => (
-                  <div key={h} className="py-0.5">{String(h).padStart(2, '0')}</div>
+                  <div key={h} className="py-1 bg-[var(--bg-subtle)] rounded font-semibold text-zinc-400">
+                    {String(h).padStart(2, '0')}
+                  </div>
                 ))}
               </div>
 
@@ -295,13 +292,12 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
                     key={dow}
                     className="grid grid-cols-[60px_repeat(24,_minmax(0,_1fr))] gap-1 mb-1 items-center font-mono text-xs"
                   >
-                    <div className="text-[11px] font-semibold text-[var(--text-muted)] pl-1">
+                    <div className="text-[11px] font-bold text-amber pl-2">
                       {DAYS_SHORT[dow]}
                     </div>
                     {Array.from({ length: 24 }).map((_, hr) => {
-                      // In 1-hour resolution, there's 1 cell. In 15m resolution, show average or first
                       const cell = dayCells.find((c) => c.hour === hr);
-                      if (!cell) return <div key={hr} className="h-8 bg-zinc-900/30 rounded"></div>;
+                      if (!cell) return <div key={hr} className="h-9 bg-zinc-900/30 rounded"></div>;
 
                       const val = cell.metric_value;
                       const isTouch = metric === 'touch_prob';
@@ -312,11 +308,14 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
                           key={hr}
                           onMouseEnter={() => setHoveredCell(cell)}
                           onMouseLeave={() => setHoveredCell(null)}
-                          onClick={() => onSelectSlot && onSelectSlot(cell.day_of_week, cell.hour, cell.minute)}
-                          className={`h-8 rounded border flex flex-col items-center justify-center transition-all cursor-pointer ${bgClass} focus:ring-1 focus:ring-amber focus:outline-none`}
+                          onClick={() => {
+                            setHoveredCell(cell);
+                            if (onSelectSlot) onSelectSlot(cell.day_of_week, cell.hour, cell.minute);
+                          }}
+                          className={`h-9 rounded-md border flex flex-col items-center justify-center transition-all cursor-pointer ${bgClass} active:scale-95 focus:ring-1 focus:ring-amber focus:outline-none`}
                         >
                           <span className="text-[10px] font-bold num">{val.toFixed(1)}</span>
-                          <span className="text-[8px] opacity-75 num">{cell.sample_size_n}</span>
+                          <span className="text-[7.5px] opacity-75 num">{cell.sample_size_n}</span>
                         </button>
                       );
                     })}
@@ -327,23 +326,22 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
           </div>
         ) : null}
 
-        {/* Hovered Cell Detail Card / Inspection Bar */}
-        <div className="p-2.5 bg-[var(--bg-subtle)] hairline-border rounded flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+        {/* Selected / Hovered Detail Inspection Box */}
+        <div className="p-3 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-lg text-xs font-mono">
           {hoveredCell ? (
-            <>
-              <div className="flex items-center gap-3">
-                <span className="font-bold text-amber">{hoveredCell.slot_label}</span>
-                <span>
-                  {t.touchProb}: <b className="text-[var(--text-primary)]">{hoveredCell.touch_pct}%</b>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="px-2 py-0.5 rounded bg-amber text-black font-bold text-xs">
+                  {hoveredCell.slot_label}
                 </span>
                 <span>
-                  {t.confidenceInterval}:{' '}
-                  <b className="text-zinc-300">
-                    [{hoveredCell.ci_lower}% - {hoveredCell.ci_upper}%]
-                  </b>
+                  {t.touchProb}: <b className="text-amber">{hoveredCell.touch_pct}%</b>
                 </span>
                 <span>
-                  n: <b className="text-zinc-300">{hoveredCell.sample_size_n}</b>
+                  95% CI: <b className="text-zinc-300">[{hoveredCell.ci_lower}% - {hoveredCell.ci_upper}%]</b>
+                </span>
+                <span>
+                  Sample (n): <b className="text-zinc-300">{hoveredCell.sample_size_n}</b>
                 </span>
               </div>
               {hoveredCell.low_sample_warning && (
@@ -352,23 +350,22 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
                   <span>{t.lowSampleWarning}</span>
                 </div>
               )}
-            </>
+            </div>
           ) : (
             <div className="text-[var(--text-muted)] text-[11px] flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5" />
-              <span>Hover or click any day/hour cell to inspect exact sample size n, touch probability, and Wilson 95% confidence interval.</span>
+              <Info className="w-3.5 h-3.5 text-amber shrink-0" />
+              <span>Tap or hover any day/hour cell above to view statistical confidence intervals and sample size.</span>
             </div>
           )}
         </div>
 
-        {/* Selection Bias Notice Required by Specification */}
+        {/* Statistical Honesty Rule */}
         {data && (
-          <div className="text-[10px] font-mono text-[var(--text-muted)] pt-1 border-t border-[var(--border-color)]">
-            <b className="text-amber">Statistical Honesty Rule:</b> {data.selection_bias_note}
+          <div className="text-[10px] font-mono text-[var(--text-muted)] pt-1 border-t border-[var(--border-color)] leading-normal">
+            <b className="text-amber">Statistical Honesty:</b> {data.selection_bias_note}
           </div>
         )}
       </div>
     </div>
   );
 };
-
