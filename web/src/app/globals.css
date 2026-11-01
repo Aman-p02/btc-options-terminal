@@ -9,19 +9,23 @@
   --border-color: #262B30;
   --border-hover: #3A414A;
   --text-primary: #F0F2F5;
+  --text-secondary: #D1D5DB;
   --text-muted: #9AA0A6;
   --accent-amber: #F59E0B;
+  --badge-bg: #272C30;
 }
 
 .light {
-  --bg-primary: #F7F8FA;
+  --bg-primary: #F8F9FA;
   --bg-surface: #FFFFFF;
-  --bg-subtle: #EDF0F3;
-  --border-color: #D3D8DF;
-  --border-hover: #B4BCC8;
-  --text-primary: #15181C;
-  --text-muted: #5F6670;
+  --bg-subtle: #F1F3F5;
+  --border-color: #E2E6EA;
+  --border-hover: #CBD2D9;
+  --text-primary: #1A1D20;
+  --text-secondary: #374151;
+  --text-muted: #6B7280;
   --accent-amber: #D97706;
+  --badge-bg: #E9ECEF;
 }
 
 body {
@@ -30,6 +34,35 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Light Mode Overrides for Hardcoded zinc/gray utility classes */
+.light .text-zinc-100,
+.light .text-zinc-200,
+.light .text-zinc-300 {
+  color: #1F2937 !important;
+}
+
+.light .text-zinc-400,
+.light .text-zinc-500 {
+  color: #4B5563 !important;
+}
+
+.light .bg-zinc-800,
+.light .bg-zinc-900 {
+  background-color: #F3F4F6 !important;
+  color: #1F2937 !important;
+}
+
+.light .border-zinc-700,
+.light .border-zinc-800 {
+  border-color: #E5E7EB !important;
+}
+
+.light select option {
+  background-color: #FFFFFF;
+  color: #111827;
 }
 
 /* Strict Tabular Numbers for all financial metrics */
